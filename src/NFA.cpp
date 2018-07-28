@@ -220,7 +220,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             break;
         }
     }
-    debugPrint(&fragStack.top());
+    // debugPrint(&fragStack.top());
     parseStack.pop();
 
     // 栈不为空,语法有错误
@@ -229,6 +229,13 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
         return -2;
     }
     return 0;
+}
+
+void NFA::debugPrint()
+{
+    Frag frag;
+    frag.start = bigStates[0];
+    debugPrint(&frag);
 }
 
 void NFA::debugPrint(Frag *frag)
