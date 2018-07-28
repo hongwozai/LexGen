@@ -106,6 +106,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             } else if (parseStack.top() != PAIR) {
                 return -3;
             }
+            parseStack.pop();
             // TODO: * + 重复
             tempFrag.end->addEdge("", fragStack.top().end);
             fragStack.top().last = tempFrag.end;
@@ -197,7 +198,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         default:
             // 正常字符
-            cout << "char: " << c << endl;
+            // cout << "char: " << c << endl;
             switch (parseStack.top()) {
             case BRACKET:
                 newValue += c;
@@ -223,10 +224,10 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
     parseStack.pop();
 
     // 栈不为空,语法有错误
-    // if (!parseStack.empty() || fragStack.size() != 1) {
-    //     assert(!"stack not empty!");
-    //     return -2;
-    // }
+    if (!parseStack.empty() || fragStack.size() != 1) {
+        assert(!"stack not empty!");
+        return -2;
+    }
     return 0;
 }
 
@@ -289,7 +290,6 @@ NFA::Edge *NFA::State::addEdge(const std::string &value, State *next)
     Edge edge;
     edge.value = value;
     edge.next  = next;
-    cout << "aa: " << vec.size() << endl;
     vec.push_back(edge);
     return &vec[vec.size() - 1];
 }

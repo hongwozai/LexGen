@@ -87,8 +87,6 @@ private:
 
         void appendNode(const char c);
         void appendNode(const std::string &);
-
-        Frag clone();
     };
 
     // only use in parseStack
