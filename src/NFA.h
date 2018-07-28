@@ -56,32 +56,43 @@ private:
 
     struct State {
         std::vector<Edge> vec;
+
+        Edge *addEdge(const std::string &, State *);
+        Edge *addEdge(const char, State *);
+        Edge *addEdge(Edge &edge);
     };
 
     struct Frag {
+        // 起始状态和终结状态
         State *start;
         State *end;
 
-        Frag(State *start, State *end)
-            : start(start), end(end) {}
-    };
-
-    // only use in stack
-    struct FragNode {
-        Frag *frag;
+        // 最后一个状态（除终结状态外）
         State *last;
-        State *secondLast;
+        // 到达最后一个状态的边
+        Edge  *edge;
 
-        FragNode(Frag *frag, State *last, State *secondLast)
-            : frag(frag), last(last), secondLast(secondLast) {}
+        // 是否为capture
+        bool   isCapture;
+
+        Frag(State *start, State *end)
+            : start(start),
+              end(end),
+              last(start),
+              edge(0),
+              isCapture(false)
+        {}
+
+        void appendNode(const char c);
+        void appendNode(const std::string &);
     };
 
     // only use in parseStack
     enum {
         NORMAL = 0,
-        BRACKET,
-        PAIR,
-        TRANSFER,
+        BRACKET,                // []
+        PAIR,                   // ()
+        TRANSFER,               // '\'
     };
 
 private:

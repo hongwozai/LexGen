@@ -8,7 +8,7 @@ TESTTARGET = $(addsuffix Test, $(TARGET))
 
 CC = g++
 
-CFLAGS  = -g3 -Wall -Iinc -lstdc++ -std=c++11
+CFLAGS  = -g3 -Wall -Iinc -lstdc++ -std=c++11 -Isrc
 LDFLAGS =
 
 SRCS  = $(wildcard $(addsuffix /*.cpp, $(SUBDIR)))
@@ -45,7 +45,7 @@ clean:
 test: CFLAGS += -UNDEBUG
 test: LDFLAGS += -lgtest -lpthread
 test: $(TESTTARGET)
-	./$(TESTTARGET)
+	./$(TESTTARGET) 2> test.dot && dot -Tpng test.dot -o test.png && display test.png
 
 coverage: CFLAGS  += --coverage
 coverage: LDFLAGS += --coverage
