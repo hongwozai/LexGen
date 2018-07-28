@@ -71,20 +71,24 @@ private:
         State *last;
         // 到达最后一个状态的边
         Edge  *edge;
+        // 倒数第二个状态
+        State *secondLast;
 
-        // 是否为capture
-        bool   isCapture;
+        // 为了复制使用
+        Frag() {}
 
         Frag(State *start, State *end)
             : start(start),
               end(end),
               last(start),
               edge(0),
-              isCapture(false)
+              secondLast(last)
         {}
 
         void appendNode(const char c);
         void appendNode(const std::string &);
+
+        Frag clone();
     };
 
     // only use in parseStack

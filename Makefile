@@ -45,6 +45,7 @@ clean:
 test: CFLAGS += -UNDEBUG
 test: LDFLAGS += -lgtest -lpthread
 test: $(TESTTARGET)
+	@rm -rf test.png
 	./$(TESTTARGET) 2> test.dot && dot -Tpng test.dot -o test.png && display test.png
 
 coverage: CFLAGS  += --coverage
