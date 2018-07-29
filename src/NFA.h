@@ -20,7 +20,7 @@ class NFA
 {
 public:
 
-    NFA() {}
+    NFA() : seq(0) {}
 
     ~NFA() {}
 
@@ -55,7 +55,12 @@ private:
     };
 
     struct State {
+        int seq;
         std::vector<Edge> vec;
+
+        explicit State() : seq(0) {}
+
+        explicit State(int seq) : seq(seq) {}
 
         Edge *addEdge(const std::string &, State *);
         Edge *addEdge(const char, State *);
@@ -74,15 +79,23 @@ private:
         // 倒数第二个状态
         State *secondLast;
 
+        // 统计该frag有多少节点
+        int numStates;
+
+        // 序号
+        int seq;
+
         // 为了复制使用
         Frag() {}
 
-        Frag(State *start, State *end)
+        Frag(State *start, State *end, int baseseq)
             : start(start),
               end(end),
               last(start),
               edge(0),
-              secondLast(last)
+              secondLast(last),
+              numStates(0),
+              seq(baseseq)
         {}
 
         void appendNode(const char c);
@@ -106,6 +119,17 @@ private:
 private:
 
     std::map<int, State*> bigStates;
+
+    int numStates;
+
+    /**
+     * 该序号为状态序号，自增使用，独一无二
+     */
+    int seq;
+
+private:
+
+    friend class DFA;
 };
 
 #endif /* NFA_H */

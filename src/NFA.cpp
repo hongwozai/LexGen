@@ -21,9 +21,11 @@ using namespace std;
 int NFA::init()
 {
     // initial bigState
-    bigStates.insert(pair<int, State*>(0, new State));
+    bigStates.insert(pair<int, State*>(0, new State(seq++)));
     // end bigState
-    bigStates.insert(pair<int, State*>(-1, new State));
+    bigStates.insert(pair<int, State*>(-1, new State(seq++)));
+
+    numStates = 2;
     return 0;
 }
 
@@ -48,7 +50,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
     bool isCapture = false;
 
     parseStack.push(NORMAL);
-    fragStack.push(Frag(start, end));
+    fragStack.push(Frag(start, end, seq));
     for (size_t i = 0; i < len; i++) {
         char c = str[i];
 
@@ -89,7 +91,11 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 break;
             }
             parseStack.push(PAIR);
-            fragStack.push(Frag(tempFrag.last, new State()));
+            fragStack.push(
+                Frag(tempFrag.last,
+                     new State(tempFrag.seq),
+                     tempFrag.seq + 1));
+            fragStack.top().numStates++;
             // NOTE: 注意这里最后一条边在capture之前
             break;
         }
@@ -107,9 +113,11 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 return -3;
             }
             parseStack.pop();
-            // TODO: * + 重复
+
             tempFrag.end->addEdge("", fragStack.top().end);
             fragStack.top().last = tempFrag.end;
+            fragStack.top().numStates += tempFrag.numStates;
+            fragStack.top().seq = tempFrag.seq;
 
             // 记录最后一个capture，以便可以*+?
             isCapture = true;
@@ -221,6 +229,8 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
         }
     }
     // debugPrint(&fragStack.top());
+    numStates += fragStack.top().numStates;
+    // cout << "num: " << numStates << endl;
     parseStack.pop();
 
     // 栈不为空,语法有错误
@@ -264,7 +274,8 @@ void NFA::debugPrint(Frag *frag)
             }
 
             // 当前节点
-            cerr << record[state];
+            // cerr << record[state];
+            cerr << state->seq;
             cerr << " -> ";
             // 指向节点
             map<State *, int>::iterator f = record.find(it->next);
@@ -277,7 +288,8 @@ void NFA::debugPrint(Frag *frag)
                 // 访问过的不再访问
             }
 
-            cerr << record[it->next];
+            cerr << it->next->seq;
+            // cerr << record[it->next];
             cerr << " [label=\"";
             if (it->value.empty()) {
                 cerr << "<empty>";
@@ -326,7 +338,8 @@ void NFA::Frag::appendNode(const char c)
 void NFA::Frag::appendNode(const std::string &value)
 {
     Edge  *edge;
-    State *tempState = new State();
+    State *tempState = new State(seq++);
+    // cout << "state: " << seq - 1 << endl;
 
     tempState->addEdge("", end);
 
@@ -350,4 +363,6 @@ void NFA::Frag::appendNode(const std::string &value)
     this->edge = edge;
     secondLast = last;
     last = tempState;
+
+    numStates += 1;
 }
