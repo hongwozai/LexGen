@@ -21,9 +21,9 @@ public:
     explicit BitSet(long num)
         : num(num),
           data(0) {
-        long n = cal();
-        data = new char[n];
-        memset(data, 0, n);
+        bytes = cal();
+        data = new char[bytes];
+        memset(data, 0, bytes);
     }
 
     ~BitSet() {
@@ -31,7 +31,7 @@ public:
     }
 
     long cal() {
-        if ((num % 8) == 0) {
+        if ((num & 7) == 0) {
             return num >> 3;
         }
         return (num >> 3) + 1;
@@ -61,9 +61,22 @@ public:
         return 0 == memcmp(data, set.data, num);
     }
 
-private:
+    bool operator<(BitSet &set) {
+        if (num != set.num) {
+            return false;
+        }
+
+        for (long i = bytes - 1; i > 0; i++) {
+            if (data[i] ^ set.data[i]) return set.data[i];
+        }
+        return false;
+    }
+
+public:
 
     long num;
+
+    long bytes;
 
     char *data;
 };

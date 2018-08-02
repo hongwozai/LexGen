@@ -50,7 +50,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
     bool isCapture = false;
 
     parseStack.push(NORMAL);
-    fragStack.push(Frag(start, end, seq));
+    fragStack.push(Frag(start, end, this));
     for (size_t i = 0; i < len; i++) {
         char c = str[i];
 
@@ -83,6 +83,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         case '(': {
             Frag &tempFrag = fragStack.top();
+
             if (parseStack.top() == BRACKET) {
                 newValue += c;
                 break;
@@ -91,10 +92,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 break;
             }
             parseStack.push(PAIR);
-            fragStack.push(
-                Frag(tempFrag.last,
-                     new State(tempFrag.seq),
-                     tempFrag.seq + 1));
+            fragStack.push(Frag(tempFrag.last, new State(seq++), this));
             fragStack.top().numStates++;
             // NOTE: 注意这里最后一条边在capture之前
             break;
@@ -102,6 +100,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         case ')': {
             Frag &tempFrag = fragStack.top();
+
             fragStack.pop();
             if (parseStack.top() == BRACKET) {
                 newValue += c;
@@ -117,7 +116,6 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             tempFrag.end->addEdge("", fragStack.top().end);
             fragStack.top().last = tempFrag.end;
             fragStack.top().numStates += tempFrag.numStates;
-            fragStack.top().seq = tempFrag.seq;
 
             // 记录最后一个capture，以便可以*+?
             isCapture = true;
@@ -128,6 +126,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         case '*': {
             Frag &tempFrag = fragStack.top();
+
             if (parseStack.top() == BRACKET) {
                 newValue += c;
                 break;
@@ -150,6 +149,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         case '+': {
             Frag &tempFrag = fragStack.top();
+
             if (parseStack.top() == BRACKET) {
                 newValue += c;
                 break;
@@ -170,6 +170,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         case '?': {
             Frag &tempFrag = fragStack.top();
+
             if (parseStack.top() == BRACKET) {
                 newValue += c;
                 break;
@@ -189,6 +190,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
         case '|': {
             Frag &tempFrag = fragStack.top();
+
             tempFrag.edge = NULL;
             tempFrag.last = tempFrag.start;
             break;
@@ -212,8 +214,10 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 newValue += c;
                 break;
             case TRANSFER:
-                fragStack.top().appendNode(c);
                 parseStack.pop();
+                fragStack
+                    .top()
+                    .appendNode(transfer(c, parseStack.top()));
                 break;
             case PAIR:
                 // continue
@@ -338,7 +342,7 @@ void NFA::Frag::appendNode(const char c)
 void NFA::Frag::appendNode(const std::string &value)
 {
     Edge  *edge;
-    State *tempState = new State(seq++);
+    State *tempState = new State(nfa->seq++);
     // cout << "state: " << seq - 1 << endl;
 
     tempState->addEdge("", end);
@@ -365,4 +369,53 @@ void NFA::Frag::appendNode(const std::string &value)
     last = tempState;
 
     numStates += 1;
+}
+
+int NFA::parse(std::string &value, void *next[256], void *ptr)
+{
+    bool isreverse = false;
+    if (value.empty()) {
+        return 1;
+    }
+    if (value.size() == 1) {
+        if (value[0] == '.') {
+            for (int i = 0; i < 256; i++) {
+                if (i != '\n')
+                    next[i] = ptr;
+            }
+        } else {
+            next[(int)value[0]] = ptr;
+        }
+        return 2;
+    }
+    if (value[0] != '[') {
+        return -1;
+    }
+    if (value[1] == '^') {
+        isreverse = true;
+    }
+    // 解析具体的值
+    for (int i = 0; i < 256; i++) {
+        
+    }
+
+    return 0;
+}
+
+string NFA::transfer(char c, int env)
+{
+    if (env == BRACKET) {
+        return string(c, 1);
+    }
+    switch(c) {
+    case 'd':
+        return string("[0-9]");
+    case 's':
+        // space tab
+        return string("[ 	]");
+    case 'w':
+        return string("[_0-9A-Za-z]");
+    default:
+        return string(c, 1);
+    }
 }

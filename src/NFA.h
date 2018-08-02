@@ -43,6 +43,13 @@ public:
      */
     void debugPrint();
 
+    /**
+     * 解析每条边的输入
+     * 解析结果是32个字节（256位）
+     * 以位图的方式传递出去，说明该条边的输入是
+     */
+    int parse(std::string &value, void *next[256], void *ptr);
+
 private:
 
     struct State;
@@ -83,19 +90,19 @@ private:
         int numStates;
 
         // 序号
-        int seq;
+        NFA *nfa;
 
         // 为了复制使用
         Frag() {}
 
-        Frag(State *start, State *end, int baseseq)
+        Frag(State *start, State *end, NFA *nfa)
             : start(start),
               end(end),
               last(start),
               edge(0),
               secondLast(last),
               numStates(0),
-              seq(baseseq)
+              nfa(nfa)
         {}
 
         void appendNode(const char c);
@@ -115,6 +122,8 @@ private:
     int read(const char *str, size_t len, State *state, State *end);
 
     void debugPrint(Frag *frag);
+
+    std::string transfer(char c, int env);
 
 private:
 
