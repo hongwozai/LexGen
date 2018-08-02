@@ -12,6 +12,7 @@
 #include <set>
 #include <stack>
 #include <vector>
+#include <cstdio>
 
 #include "DFA.h"
 
@@ -49,9 +50,7 @@ int DFA::closure(NFA::State *state, BitSet &bitset)
         }
 
         bitset.set(state->seq);
-
         mark.insert(state->seq);
-
         for (vector<NFA::Edge>::iterator it = state->vec.begin();
              it != state->vec.end();
              ++it) {

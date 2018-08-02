@@ -8,7 +8,7 @@ TESTTARGET = $(addsuffix Test, $(TARGET))
 
 CC = g++
 
-CFLAGS  = -g3 -Wall -Iinc -lstdc++ -std=c++11 -Isrc
+CFLAGS  = -g3 -Wall -Iinc -lstdc++ -std=gnu++98 -Isrc
 LDFLAGS =
 
 SRCS  = $(wildcard $(addsuffix /*.cpp, $(SUBDIR)))

@@ -28,3 +28,20 @@ TEST(nfa, read)
     // EXPECT_EQ(0, nfa.read(regexp8.data(), regexp8.size()));
     nfa.debugPrint();
 }
+
+TEST(nfa, parse)
+{
+    NFA nfa;
+    string value1 = "[a-c";
+    string value2 = "[a-c]";
+    string value3 = "[adc]";
+    string value4 = "[A-Za-z]";
+    string value5 = "[^]";
+    string value6 = "[^a-z]";
+    bool next[256] = {false};
+    EXPECT_EQ(-1, nfa.parse(value1, next));
+    EXPECT_EQ(3, nfa.parse(value3, next));
+    EXPECT_EQ(52, nfa.parse(value4, next));
+    EXPECT_EQ(256, nfa.parse(value5, next));
+    EXPECT_EQ(256 - 26, nfa.parse(value6, next));
+}

@@ -371,35 +371,57 @@ void NFA::Frag::appendNode(const std::string &value)
     numStates += 1;
 }
 
-int NFA::parse(std::string &value, void *next[256], void *ptr)
+int NFA::parse(std::string &value, bool next[256])
 {
     bool isreverse = false;
+    bool temp[256] = {false};
+    int num = 0;
+
     if (value.empty()) {
-        return 1;
+        return 0;
     }
     if (value.size() == 1) {
         if (value[0] == '.') {
             for (int i = 0; i < 256; i++) {
                 if (i != '\n')
-                    next[i] = ptr;
+                    next[i] = true;
             }
+            return 255;
         } else {
-            next[(int)value[0]] = ptr;
+            next[(int)value[0]] = true;
+            return 1;
         }
-        return 2;
     }
-    if (value[0] != '[') {
+    if (value[0] != '[' || value[value.size() - 1] != ']') {
         return -1;
     }
+    // 判断是否反向
     if (value[1] == '^') {
         isreverse = true;
     }
     // 解析具体的值
-    for (int i = 0; i < 256; i++) {
-        
+    for (size_t i = isreverse?2:1; i < value.size() - 1; i++) {
+        if (value[i-1] != '[' &&
+            value[i]   == '-'   &&
+            value[i+1] != ']') {
+            for (int j = value[i-1] + 1; j <= value[i+1]; j++) {
+                temp[j] = true;
+            }
+            i++;
+        } else {
+            temp[(int)value[i]] = true;
+        }
     }
-
-    return 0;
+    // 根据是否反向进行
+    for (int i = 0; i < 256; i++) {
+        // if (temp[i] == true && isreverse == false ||
+        //     temp[i] == false && isreverse == true) {
+        if (temp[i] ^ isreverse) {
+            next[i] = true;
+            num++;
+        }
+    }
+    return num;
 }
 
 string NFA::transfer(char c, int env)
@@ -412,7 +434,7 @@ string NFA::transfer(char c, int env)
         return string("[0-9]");
     case 's':
         // space tab
-        return string("[ 	]");
+        return string("[ \t\v\n]");
     case 'w':
         return string("[_0-9A-Za-z]");
     default:

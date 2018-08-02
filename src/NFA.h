@@ -48,7 +48,7 @@ public:
      * 解析结果是32个字节（256位）
      * 以位图的方式传递出去，说明该条边的输入是
      */
-    int parse(std::string &value, void *next[256], void *ptr);
+    int parse(std::string &value, bool next[256]);
 
 private:
 
