@@ -18,28 +18,16 @@
 
 using namespace std;
 
-int DFA::build()
-{
-    DState *dstate = new DState();
-
-    // start dstate
-    closure(nfa.bigStates[0], dstate->nfaStates);
-    dstates[&dstate->nfaStates] = dstate;
-
-    //
-
-    return 0;
-}
-
 int DFA::init()
 {
     return 0;
 }
 
-int DFA::closure(NFA::State *state, BitSet &bitset)
+int DFA::closure(NFA::State *state, BitSet &bitset, int c)
 {
     set<int> mark;
     stack<NFA::State*> stateStack;
+    bool isread = false;
 
     stateStack.push(state);
     while (!stateStack.empty()) {
@@ -57,6 +45,10 @@ int DFA::closure(NFA::State *state, BitSet &bitset)
             if (it->value.empty()) {
                 stateStack.push(it->next);
             }
+            if (it->val[c] == true && isread == false) {
+                isread = true;
+                stateStack.push(it->next);
+            }
         }
     }
     return 0;
@@ -71,4 +63,17 @@ void DFA::printDState(DState *dstate)
         }
     }
     printf("}");
+}
+
+int DFA::build()
+{
+    DState *dstate = new DState();
+
+    // start dstate
+    // closure(nfa.bigStates[0], dstate->nfaStates);
+    // dstates[&dstate->nfaStates] = dstate;
+
+    //
+
+    return 0;
 }

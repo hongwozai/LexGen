@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <cstring>
 
 class NFA
 {
@@ -48,7 +49,7 @@ public:
      * 解析结果是32个字节（256位）
      * 以位图的方式传递出去，说明该条边的输入是
      */
-    int parse(std::string &value, bool next[256]);
+    int parse(const std::string &value, bool next[256]);
 
 private:
 
@@ -57,8 +58,12 @@ private:
     struct Edge {
         std::string value;
         State *next;
+        // val是value解析出来的具体值
+        bool        val[256];
 
-        Edge() : value(), next(0) {}
+        Edge() : value(), next(0) {
+            memset(val, 0, sizeof(bool) * 256);
+        }
     };
 
     struct State {

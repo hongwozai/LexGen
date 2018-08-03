@@ -36,7 +36,11 @@ public:
 
     int build();
 
-    int closure(NFA::State *state, BitSet &set);
+    /**
+     * 不完全是求闭包,还包括读一个字符
+     * c传递-1就是不读字符,0-255是读取一个字符
+     */
+    int closure(NFA::State *state, BitSet &set, int c);
 
 
 private:

@@ -21,17 +21,18 @@ using namespace std;
 int NFA::init()
 {
     // initial bigState
-    bigStates.insert(pair<int, State*>(0, new State(seq++)));
+    bigStates.insert(pair<int, State*>(0, new State(0)));
     // end bigState
-    bigStates.insert(pair<int, State*>(-1, new State(seq++)));
+    bigStates.insert(pair<int, State*>(1, new State(1)));
 
+    seq = 2;
     numStates = 2;
     return 0;
 }
 
 int NFA::read(const char *str, size_t len)
 {
-    return read(str, len, bigStates[0], bigStates[-1]);
+    return read(str, len, bigStates[0], bigStates[1]);
 }
 
 /**
@@ -78,6 +79,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             newValue += ']';
             tempFrag.appendNode(newValue);
             isCapture = false;
+
             break;
         }
 
@@ -94,6 +96,8 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             parseStack.push(PAIR);
             fragStack.push(Frag(tempFrag.last, new State(seq++), this));
             fragStack.top().numStates++;
+
+            bigStates[fragStack.top().end->seq] = fragStack.top().end;
             // NOTE: 注意这里最后一条边在capture之前
             break;
         }
@@ -369,9 +373,11 @@ void NFA::Frag::appendNode(const std::string &value)
     last = tempState;
 
     numStates += 1;
+    nfa->bigStates[tempState->seq] = tempState;
+    nfa->parse(value, edge->val);
 }
 
-int NFA::parse(std::string &value, bool next[256])
+int NFA::parse(const std::string &value, bool next[256])
 {
     bool isreverse = false;
     bool temp[256] = {false};
@@ -432,11 +438,17 @@ string NFA::transfer(char c, int env)
     switch(c) {
     case 'd':
         return string("[0-9]");
+    case 'D':
+        return string("[^0-9]");
     case 's':
         // space tab
-        return string("[ \t\v\n]");
+        return string("[ \t\v\n\r\f]");
+    case 'S':
+        return string("[^ \t\v\n\r\f]");
     case 'w':
         return string("[_0-9A-Za-z]");
+    case 'W':
+        return string("[^_0-9A-Za-z]");
     default:
         return string(c, 1);
     }
