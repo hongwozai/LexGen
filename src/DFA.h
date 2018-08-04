@@ -49,14 +49,16 @@ private:
         BitSet  nfaStates;
         DState *next[256];
 
-        DState() : nfaStates(0) {
-            memset(next, 0, sizeof(DState) * 256);
+        DState(int num) : nfaStates(num) {
+            memset(next, 0, sizeof(void*) * 256);
         }
     };
 
 private:
 
-    void printDState(DState *dstate);
+    void printDState(BitSet &set);
+
+    int nextDState(DState &, int, BitSet &);
 
 private:
 
@@ -65,7 +67,7 @@ private:
     DState *start;
 
     // 根据位图(NFA状态集)查找状态
-    std::map<BitSet*, DState*> dstates;
+    std::map<BitSet*, DState*, PtrBitSet> dstates;
 
     // nfa
     NFA &nfa;

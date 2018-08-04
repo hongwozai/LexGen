@@ -55,6 +55,10 @@ public:
         return ((((char*)(data))[(n) >> 3]) & (1 << ((n) & 0x7)));
     }
 
+    void clear() {
+        memset(data, 0, bytes);
+    }
+
     bool operator==(BitSet &set) {
         if (num != set.num)
             return false;
@@ -66,10 +70,21 @@ public:
             return false;
         }
 
-        for (long i = bytes - 1; i > 0; i++) {
-            if (data[i] ^ set.data[i]) return set.data[i];
+        for (long i = bytes - 1; i >= 0; i--) {
+            if (data[i] < set.data[i]) return true;
         }
         return false;
+    }
+
+    int move(BitSet &set) {
+        delete[] data;
+        this->num   = set.num;
+        this->bytes = set.bytes;
+        this->data  = set.data;
+        set.num   = 0;
+        set.bytes = 0;
+        set.data  = 0;
+        return -1;
     }
 
 public:
@@ -79,6 +94,14 @@ public:
     long bytes;
 
     char *data;
+};
+
+class PtrBitSet
+{
+public:
+    bool operator()(BitSet *b1, BitSet *b2) const {
+        return *b1 == *b2;
+    }
 };
 
 #endif /* BITSET_H */

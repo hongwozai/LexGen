@@ -22,17 +22,19 @@ int NFA::init()
 {
     // initial bigState
     bigStates.insert(pair<int, State*>(0, new State(0)));
-    // end bigState
+    // error bigState
     bigStates.insert(pair<int, State*>(1, new State(1)));
+    // end bigState
+    bigStates.insert(pair<int, State*>(2, new State(2)));
 
-    seq = 2;
-    numStates = 2;
+    seq = 3;
+    numStates = 3;
     return 0;
 }
 
 int NFA::read(const char *str, size_t len)
 {
-    return read(str, len, bigStates[0], bigStates[1]);
+    return read(str, len, bigStates[0], bigStates[2]);
 }
 
 /**

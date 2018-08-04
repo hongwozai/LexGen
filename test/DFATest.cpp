@@ -19,11 +19,14 @@ TEST(dfa, closure)
     // EXPECT_EQ(nfa.numStates, set.num);
     // EXPECT_EQ(2, set.bytes);
 
-    dfa.closure(nfa.bigStates[0], set, 'a');
+    // dfa.closure(nfa.bigStates[0], set, 'a');
+    // dfa.closure(nfa.bigStates[0], set, -1);
 
-    for (int i = 0; i < nfa.numStates; i++) {
-        if (set.check(i)) {
-            cout << i << endl;
-        }
-    }
+    // for (int i = 0; i < nfa.numStates; i++) {
+    //     if (set.check(i)) {
+    //         cout << i << endl;
+    //     }
+    // }
+
+    dfa.build();
 }
