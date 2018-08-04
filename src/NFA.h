@@ -21,7 +21,9 @@ class NFA
 {
 public:
 
-    NFA() : seq(0) {}
+    NFA() : seq(0) {
+        init();
+    }
 
     ~NFA() {}
 
@@ -130,11 +132,13 @@ private:
 
     std::string transfer(char c, int env);
 
-private:
+public:
 
     std::map<int, State*> bigStates;
 
     int numStates;
+
+private:
 
     /**
      * 该序号为状态序号，自增使用，独一无二

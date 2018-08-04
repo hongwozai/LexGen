@@ -187,7 +187,8 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             if (isCapture) {
                 lastFrag.start->addEdge("", lastFrag.end);
             } else {
-                tempFrag.secondLast->addEdge("", tempFrag.end);
+                // 需要添加一个新节点，来让last仅有一个
+                tempFrag.secondLast->addEdge("", tempFrag.last);
             }
             break;
         }
@@ -357,16 +358,17 @@ void NFA::Frag::appendNode(const std::string &value)
     if (last->vec.size() == 0) {
         edge = last->addEdge(value, tempState);
     } else {
-        edge = &last->vec[last->vec.size() - 1];
-        // NOTE: 此处认为最后节点的空边指向终结状态
-        //       该函数本身也只对最后节点使用，
-        //       而最后节点要么只有空边，要么没有边
-        if (edge->value == "") {
-            edge->value = value;
-            edge->next  = tempState;
-        } else {
-            edge = last->addEdge(value, tempState);
+        // 选取最后这个空边且只向终结状态的节点
+        for (vector<Edge>::iterator it = last->vec.begin();
+             it != last->vec.end();
+             ++it) {
+            if (it->value.empty() && it->next == end) {
+                edge = &*it;
+                edge->value = value;
+                edge->next  = tempState;
+            }
         }
+        assert(edge != NULL);
     }
     this->edge = edge;
     secondLast = last;
