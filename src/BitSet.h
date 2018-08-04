@@ -72,7 +72,9 @@ public:
 
         for (long i = bytes - 1; i >= 0; i--) {
             if (data[i] < set.data[i]) return true;
+            if (data[i] > set.data[i]) return false;
         }
+        // =
         return false;
     }
 
@@ -100,7 +102,7 @@ class PtrBitSet
 {
 public:
     bool operator()(BitSet *b1, BitSet *b2) const {
-        return *b1 == *b2;
+        return *b1 < *b2;
     }
 };
 
