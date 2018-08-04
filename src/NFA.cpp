@@ -346,7 +346,7 @@ void NFA::Frag::appendNode(const char c)
 
 void NFA::Frag::appendNode(const std::string &value)
 {
-    Edge  *edge;
+    Edge  *edge = NULL;
     State *tempState = new State(nfa->seq++);
     // cout << "state: " << seq - 1 << endl;
 
@@ -359,6 +359,7 @@ void NFA::Frag::appendNode(const std::string &value)
         edge = last->addEdge(value, tempState);
     } else {
         // 选取最后这个空边且只向终结状态的节点
+        bool flag = false;
         for (vector<Edge>::iterator it = last->vec.begin();
              it != last->vec.end();
              ++it) {
@@ -366,7 +367,11 @@ void NFA::Frag::appendNode(const std::string &value)
                 edge = &*it;
                 edge->value = value;
                 edge->next  = tempState;
+                flag = true;
             }
+        }
+        if (flag == false) {
+            edge = last->addEdge(value, tempState);
         }
         assert(edge != NULL);
     }

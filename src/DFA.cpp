@@ -13,6 +13,8 @@
 #include <stack>
 #include <vector>
 #include <cstdio>
+#include <iostream>
+#include <cassert>
 
 #include "DFA.h"
 
@@ -23,30 +25,68 @@ int DFA::init()
     return 0;
 }
 
-int DFA::closure(NFA::State *state, BitSet &bitset, int c)
+/**
+ * 算法思路：简单的方式，找空边，找c边，找空边
+ * 另一个想法：
+ * 对每个节点记录之前是否走过c边（走过的又遇到没走时候，视为没有走过）
+ */
+int DFA::closure(NFA::State *start, BitSet &bitset, int c)
 {
-    set<int> mark;
     stack<NFA::State*> stateStack;
-    bool isread = false;
+    stack<NFA::State*> cStack;
+    NFA::State *state = start;
 
+    // 1. 找闭包
     stateStack.push(state);
     while (!stateStack.empty()) {
+        state = stateStack.top();
+        stateStack.pop();
 
-        if (mark.find(state->seq) != mark.end()) {
-            // 已经标记
+        if (bitset.check(state->seq)) {
             continue;
         }
-
         bitset.set(state->seq);
-        mark.insert(state->seq);
+        cStack.push(state);
         for (vector<NFA::Edge>::iterator it = state->vec.begin();
              it != state->vec.end();
              ++it) {
             if (it->value.empty()) {
                 stateStack.push(it->next);
             }
-            if (it->val[c] == true && isread == false) {
-                isread = true;
+        }
+    }
+
+    // 2. 找c边
+    while (!cStack.empty()) {
+        state = cStack.top();
+        cStack.pop();
+
+        assert(state != NULL);
+        for (vector<NFA::Edge>::iterator it = state->vec.begin();
+             it != state->vec.end();
+             ++it) {
+            assert(it->next != NULL);
+            if (it->val[c] == true && !bitset.check(it->next->seq)) {
+                stateStack.push(it->next);
+            }
+        }
+    }
+
+    // 3. 找空边
+    while (!stateStack.empty()) {
+        state = stateStack.top();
+        stateStack.pop();
+
+        assert(state != NULL);
+        if (bitset.check(state->seq)) {
+            continue;
+        }
+        bitset.set(state->seq);
+        for (vector<NFA::Edge>::iterator it = state->vec.begin();
+             it != state->vec.end();
+             ++it) {
+            assert(it->next != NULL);
+            if (it->value.empty()) {
                 stateStack.push(it->next);
             }
         }
