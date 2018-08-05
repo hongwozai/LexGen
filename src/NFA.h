@@ -46,13 +46,6 @@ public:
      */
     void debugPrint();
 
-    /**
-     * 解析每条边的输入
-     * 解析结果是32个字节（256位）
-     * 以位图的方式传递出去，说明该条边的输入是
-     */
-    int parse(const std::string &value, bool next[256]);
-
 private:
 
     struct State;
@@ -65,6 +58,17 @@ private:
 
         Edge() : value(), next(0) {
             memset(val, 0, sizeof(bool) * 256);
+        }
+
+        /**
+         * 解析每条边的输入
+         * 任何value的改变都需要调用该函数
+         */
+        int parse();
+
+        void setValue(std::string &value) {
+            this->value = value;
+            parse();
         }
     };
 

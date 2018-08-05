@@ -33,6 +33,7 @@ int DFA::init()
  */
 int DFA::closure(NFA::State *start, BitSet &bitset, int c)
 {
+    int ret = 0;
     stack<NFA::State*> stateStack;
     stack<NFA::State*> cStack;
     NFA::State *state = start;
@@ -48,6 +49,9 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         if (tempset.check(state->seq)) {
             continue;
         }
+        if (state->seq == 2) {
+            ret = 2;
+        }
         tempset.set(state->seq);
         cStack.push(state);
         for (vector<NFA::Edge>::iterator it = state->vec.begin();
@@ -60,7 +64,8 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
     }
 
     if (c < 0 || c > 255) {
-        return 1;
+        // 0 or 2
+        return ret;
     }
     // 2. 找c边
     while (!cStack.empty()) {
@@ -71,6 +76,13 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         for (vector<NFA::Edge>::iterator it = state->vec.begin();
              it != state->vec.end();
              ++it) {
+            if (start->seq == 0 && state->seq == 5 && c == 'c') {
+                cout << "mark 5" << endl;
+                for (int i = 0; i < 256; i++) {
+                    if (it->val[i] == true)
+                        cout << i << ": " << it->val[i] << endl;
+                }
+            }
             assert(it->next != NULL);
             if (it->val[c] == true) {
                 vec.push_back(it->next->seq);
@@ -82,22 +94,12 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         // 走到错误状态了,应该将set的位全部消除
         return -1;
     }
-    return 0;
-}
-
-void DFA::printDState(BitSet &set)
-{
-    printf("{");
-    for (long i = 0; i < set.num; i++) {
-        if (set.check(i)) {
-            printf("%ld,", i);
-        }
-    }
-    printf("}");
+    return ret;
 }
 
 int DFA::nextDState(DState &dstate, int c, BitSet &set)
 {
+    int ret = 0;
     int errnum = 0;
     int setnum = 0;
     map<int, NFA::State*>::iterator it;
@@ -113,9 +115,12 @@ int DFA::nextDState(DState &dstate, int c, BitSet &set)
 
         setnum++;
         // dstate所包含的NFA::State
-        if (-1 == closure(it->second, set, c)) {
+        if (-1 == (ret = closure(it->second, set, c))) {
             // 走c会遇到错误状态(无可达状态)
             errnum ++;
+        } else if (ret == 2) {
+            // 该状态是终结状态
+            return ret;
         }
     }
     if (errnum >= setnum) {
@@ -126,10 +131,13 @@ int DFA::nextDState(DState &dstate, int c, BitSet &set)
 
 int DFA::build()
 {
+    int ret = 0;
     stack<DState*> dStack;
-    DState *dstate = new DState(nfa.numStates);
+    DState *dstate = new DState(nfa.numStates, seq++);
     DState *newd = NULL;
+    set<int> mark;
 
+    start = dstate;
     // 遍历
     dstate->nfaStates.set(0);
     dStack.push(dstate);
@@ -138,31 +146,35 @@ int DFA::build()
         dStack.pop();
 
         assert(dstate != NULL);
-        if (dstates.find(&dstate->nfaStates) != dstates.end()) {
+        if (mark.find(dstate->seq) != mark.end()) {
             continue;
         }
-        dstates[&dstate->nfaStates] = dstate;
+        mark.insert(dstate->seq);
 
         cout << "dstate: ";
-        printDState(dstate->nfaStates);
+        printDState(dstate->nfaStates, cout);
         cout << endl;
 
         // 遍历字符集
         for (int i = 0; i < 256; i++) {
             if (newd == NULL) {
-                newd = new DState(nfa.numStates);
+                newd = new DState(nfa.numStates, seq++);
             } else {
                 newd->nfaStates.clear();
             }
 
-            if (-1 == nextDState(*dstate, i, newd->nfaStates)) {
-                // 下一个dstate找不到了（遇到的全部是nfa状态）
+            if (-1 == (ret = nextDState(*dstate, i, newd->nfaStates))) {
+                // 下一个dstate找不到了
                 dstate->next[i] = NULL;
                 continue;
             }
+            if (ret == 2) {
+                newd->isfinal = true;
+                cout << "seq: " << newd->seq << "isfinal: " << (newd->isfinal ? "true": "false") << endl;
+            }
 
             printf("newd: '%c'%x: ", (char)i, i);
-            printDState(newd->nfaStates);
+            printDState(newd->nfaStates, cout);
             cout << endl;
 
             // 检查是否存在
@@ -170,22 +182,84 @@ int DFA::build()
             it = dstates.find(&newd->nfaStates);
             if (it == dstates.end()) {
                 dstate->next[i] = newd;
+                dstates[&newd->nfaStates] = newd;
                 dStack.push(newd);
-                cout << "new !" << endl;
+                cout << "new!" << endl;
                 newd = NULL;
             } else {
-                cout << "old" << endl;
                 dstate->next[i] = it->second;
             }
         }
-        cout << dstates.size() << endl;
-        map<BitSet*, DState*, PtrBitSet>::iterator it;
-        cout << dstates.size() << ": ";
-        for (it = dstates.begin(); it != dstates.end(); ++it) {
-            printDState(*it->first);
-            cout << "|";
-        }
-        cout << endl;
     }
     return 0;
+}
+
+void DFA::printStateTable()
+{
+    map<BitSet*, DState*, PtrBitSet>::iterator it;
+    /* 打印状态表 */
+    cout << dstates.size() << ": ";
+    for (it = dstates.begin(); it != dstates.end(); ++it) {
+        printDState(*it->first);
+        cout << "|";
+    }
+    cout << endl;
+}
+
+void DFA::print()
+{
+    stack<DState*> dStack;
+    DState *dstate;
+    set<int> mark;
+
+    cerr << "digraph DFA {" << endl;
+    dStack.push(start);
+    while (!dStack.empty()) {
+        dstate = dStack.top();
+        dStack.pop();
+
+        if (mark.find(dstate->seq) != mark.end()) {
+            continue;
+        }
+
+        mark.insert(dstate->seq);
+
+        for (int i = 0; i < 256; i++) {
+            if (dstate->next[i] == NULL) {
+                continue;
+            }
+            cerr << "    ";
+            /* from */
+            cerr << "\"" << dstate->seq << ":";
+            printDState(dstate->nfaStates);
+            cerr << "\"";
+
+            cerr << " -> ";
+
+            /* to */
+            cerr << "\"" << dstate->next[i]->seq << ":";
+            printDState(dstate->next[i]->nfaStates);
+            cerr << "\"";
+
+            /* label */
+            cerr << " [label=\"";
+            cerr << (char)i;
+            cerr << "\"]";
+            cerr << ";" << endl;
+
+            dStack.push(dstate->next[i]);
+        }
+    }
+    cerr << "}" << endl;
+}
+
+void DFA::printDState(BitSet &set, std::ostream &out)
+{
+    out << "{";
+    for (long i = 0; i < set.num; i++) {
+        if (set.check(i)) {
+            out << i << ",";
+        }
+    }
+    out << "}";
 }

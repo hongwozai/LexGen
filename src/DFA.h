@@ -14,6 +14,7 @@
 
 #include <map>
 #include <set>
+#include <iostream>
 #include "NFA.h"
 #include "BitSet.h"
 
@@ -24,7 +25,8 @@ public:
     DFA(NFA &nfa)
         : numStates(0),
           start(0),
-          nfa(nfa)
+          nfa(nfa),
+          seq(0)
     {}
 
     ~DFA() {}
@@ -42,23 +44,32 @@ public:
      */
     int closure(NFA::State *state, BitSet &set, int c);
 
+    void print();
+
+    void printStateTable();
 
 private:
 
     struct DState {
         BitSet  nfaStates;
         DState *next[256];
+        // 该状态序号
+        int seq;
+        // 是否为终结状态
+        bool isfinal;
 
-        DState(int num) : nfaStates(num) {
+        DState(int num, int seq)
+            : nfaStates(num),
+              seq(seq) {
             memset(next, 0, sizeof(void*) * 256);
         }
     };
 
 private:
 
-    void printDState(BitSet &set);
+    void printDState(BitSet &set, std::ostream &out = std::cerr);
 
-    int nextDState(DState &, int, BitSet &);
+    int  nextDState(DState &, int, BitSet &);
 
 private:
 
@@ -71,6 +82,9 @@ private:
 
     // nfa
     NFA &nfa;
+
+    // 全局唯一序号
+    int seq;
 };
 
 #endif /* DFA_H */

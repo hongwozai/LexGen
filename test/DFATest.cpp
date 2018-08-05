@@ -8,10 +8,10 @@ using namespace std;
 TEST(dfa, closure)
 {
     NFA nfa;
-    string regexp1 = "(a?b*c|ad*c|aac)*";
+    string regexp1 = "(a?b*c|ad*c|aac)";
     // string regexp1 = "abc?de";
     nfa.read(regexp1.data(), regexp1.size());
-    nfa.debugPrint();
+    // nfa.debugPrint();
     // EXPECT_EQ(12, nfa.numStates);
 
     DFA dfa(nfa);
@@ -29,4 +29,5 @@ TEST(dfa, closure)
     // }
 
     dfa.build();
+    dfa.print();
 }

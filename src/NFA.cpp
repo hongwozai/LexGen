@@ -149,6 +149,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             } else {
                 tempFrag.last->addEdge(tempFrag.edge->value, tempFrag.last);
                 tempFrag.edge->value = "";
+                tempFrag.edge->parse();
             }
             break;
         }
@@ -321,6 +322,7 @@ NFA::Edge *NFA::State::addEdge(const std::string &value, State *next)
     edge.value = value;
     edge.next  = next;
     vec.push_back(edge);
+    vec[vec.size() - 1].parse();
     return &vec[vec.size() - 1];
 }
 
@@ -330,12 +332,7 @@ NFA::Edge *NFA::State::addEdge(const char c, State *next)
     edge.value += c;
     edge.next  = next;
     vec.push_back(edge);
-    return &vec[vec.size() - 1];
-}
-
-NFA::Edge *NFA::State::addEdge(Edge &edge)
-{
-    vec.push_back(edge);
+    vec[vec.size() - 1].parse();
     return &vec[vec.size() - 1];
 }
 
@@ -369,6 +366,9 @@ void NFA::Frag::appendNode(const std::string &value)
                 edge = &*it;
                 edge->value = value;
                 edge->next  = tempState;
+                edge->parse();
+
+                // 找到只向终结状态的空边
                 flag = true;
             }
         }
@@ -383,10 +383,9 @@ void NFA::Frag::appendNode(const std::string &value)
 
     numStates += 1;
     nfa->bigStates[tempState->seq] = tempState;
-    nfa->parse(value, edge->val);
 }
 
-int NFA::parse(const std::string &value, bool next[256])
+int NFA::Edge::parse()
 {
     bool isreverse = false;
     bool temp[256] = {false};
@@ -399,11 +398,11 @@ int NFA::parse(const std::string &value, bool next[256])
         if (value[0] == '.') {
             for (int i = 0; i < 256; i++) {
                 if (i != '\n')
-                    next[i] = true;
+                    val[i] = true;
             }
             return 255;
         } else {
-            next[(int)value[0]] = true;
+            val[(int)value[0]] = true;
             return 1;
         }
     }
@@ -432,7 +431,7 @@ int NFA::parse(const std::string &value, bool next[256])
         // if (temp[i] == true && isreverse == false ||
         //     temp[i] == false && isreverse == true) {
         if (temp[i] ^ isreverse) {
-            next[i] = true;
+            val[i] = true;
             num++;
         }
     }
