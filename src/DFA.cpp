@@ -30,6 +30,10 @@ int DFA::init()
  * 另一个想法：
  * 对每个节点记录之前是否走过c边（走过的又遇到没走时候，视为没有走过）
  * @return -1错误状态，0走了正常状态
+ * NOTE: 该函数写的过于复杂(完成了多个功能)
+ *       1. 求闭包，还告知闭包是否包含终结状态
+ *       2. 找一个节点读c所能到达的状态，并找其是否是终结状态
+ *       找闭包，找读c到达的状态，找到达的状态是否引申为终结状态（再找闭包）
  */
 int DFA::closure(NFA::State *start, BitSet &bitset, int c)
 {
@@ -49,7 +53,8 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         if (tempset.check(state->seq)) {
             continue;
         }
-        if (state->seq == 2) {
+        if (nfa.endStates.find(state->seq) !=
+            nfa.endStates.end()) {
             ret = 2;
         }
         tempset.set(state->seq);
@@ -76,23 +81,29 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         for (vector<NFA::Edge>::iterator it = state->vec.begin();
              it != state->vec.end();
              ++it) {
-            if (start->seq == 0 && state->seq == 5 && c == 'c') {
-                cout << "mark 5" << endl;
-                for (int i = 0; i < 256; i++) {
-                    if (it->val[i] == true)
-                        cout << i << ": " << it->val[i] << endl;
-                }
-            }
             assert(it->next != NULL);
             if (it->val[c] == true) {
-                vec.push_back(it->next->seq);
+                stateStack.push(it->next);
                 bitset.set(it->next->seq);
             }
         }
     }
-    if (vec.empty()) {
+    if (stateStack.empty()) {
         // 走到错误状态了,应该将set的位全部消除
-        return -1;
+        ret = -1;
+        goto end;
+    }
+
+end:
+    // 查找是否为终结终结状态(找这些状态的闭包)
+    while (!stateStack.empty()) {
+        state = stateStack.top();
+        stateStack.pop();
+
+        tempset.clear();
+        if (2 == closure(state, tempset, -1)) {
+            return 2;
+        }
     }
     return ret;
 }
@@ -151,12 +162,15 @@ int DFA::build()
         }
         mark.insert(dstate->seq);
 
-        cout << "dstate: ";
-        printDState(dstate->nfaStates, cout);
-        cout << endl;
+        // cout << "dstate: ";
+        // printDState(dstate->nfaStates, cout);
+        // cout << endl;
 
         // 遍历字符集
         for (int i = 0; i < 256; i++) {
+            // 判断新的状态是否是终结状态
+            bool isfinal = false;
+
             if (newd == NULL) {
                 newd = new DState(nfa.numStates, seq++);
             } else {
@@ -168,14 +182,11 @@ int DFA::build()
                 dstate->next[i] = NULL;
                 continue;
             }
-            if (ret == 2) {
-                newd->isfinal = true;
-                cout << "seq: " << newd->seq << "isfinal: " << (newd->isfinal ? "true": "false") << endl;
-            }
+            isfinal = (ret == 2) ? true : false;
 
-            printf("newd: '%c'%x: ", (char)i, i);
-            printDState(newd->nfaStates, cout);
-            cout << endl;
+            // printf("newd: '%c'%x: ", (char)i, i);
+            // printDState(newd->nfaStates, cout);
+            // cout << endl;
 
             // 检查是否存在
             map<BitSet*, DState*, PtrBitSet>::iterator it;
@@ -184,7 +195,13 @@ int DFA::build()
                 dstate->next[i] = newd;
                 dstates[&newd->nfaStates] = newd;
                 dStack.push(newd);
-                cout << "new!" << endl;
+                // cout << "new!" << endl;
+
+                // 这个ret是
+                newd->isfinal = isfinal ? true : false;
+                if (isfinal) {
+                    newd->isfinal = true;
+                }
                 newd = NULL;
             } else {
                 dstate->next[i] = it->second;

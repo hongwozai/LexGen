@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <cstring>
+#include <set>
 
 class NFA
 {
@@ -139,6 +140,7 @@ private:
 public:
 
     std::map<int, State*> bigStates;
+    std::set<int>         endStates;
 
     int numStates;
 

@@ -27,6 +27,9 @@ int NFA::init()
     // end bigState
     bigStates.insert(pair<int, State*>(2, new State(2)));
 
+    // 注册终结状态
+    endStates.insert(2);
+
     seq = 3;
     numStates = 3;
     return 0;
