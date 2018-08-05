@@ -53,9 +53,13 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         if (tempset.check(state->seq)) {
             continue;
         }
-        if (nfa.endStates.find(state->seq) !=
-            nfa.endStates.end()) {
-            ret = 2;
+        if (c < 0 || c > 255) {
+            // 当计算闭包的时候才找是否为终结状态
+            // 读c走边的时候先找到走到的状态，再判断是否终结
+            if (nfa.endStates.find(state->seq) !=
+                nfa.endStates.end()) {
+                ret = 2;
+            }
         }
         tempset.set(state->seq);
         cStack.push(state);
@@ -113,6 +117,7 @@ int DFA::nextDState(DState &dstate, int c, BitSet &set)
     int ret = 0;
     int errnum = 0;
     int setnum = 0;
+    bool isfinal = false;
     map<int, NFA::State*>::iterator it;
 
     for (int i = 0; i < nfa.numStates; i++) {
@@ -131,13 +136,13 @@ int DFA::nextDState(DState &dstate, int c, BitSet &set)
             errnum ++;
         } else if (ret == 2) {
             // 该状态是终结状态
-            return ret;
+            isfinal = true;
         }
     }
     if (errnum >= setnum) {
         return -1;
     }
-    return 0;
+    return isfinal ? 2 : 0;
 }
 
 int DFA::build()
@@ -199,9 +204,6 @@ int DFA::build()
 
                 // 这个ret是
                 newd->isfinal = isfinal ? true : false;
-                if (isfinal) {
-                    newd->isfinal = true;
-                }
                 newd = NULL;
             } else {
                 dstate->next[i] = it->second;
@@ -279,4 +281,38 @@ void DFA::printDState(BitSet &set, std::ostream &out)
         }
     }
     out << "}";
+}
+
+int DFA::search(const char *str, int len)
+{
+    char c = 0;
+    int lastFinal = 0;
+    DState *curr = NULL;
+
+    assert(start != NULL);
+
+    curr = start;
+    for (int i = 0; i < len; i++) {
+        c = str[i];
+
+        curr = curr->next[(unsigned)c];
+        if (curr == NULL) {
+            goto match;
+        }
+        cout << "state: " << curr->seq << endl;
+
+        if (curr->isfinal) {
+            lastFinal = i;
+            cout << "isfinal" << endl;
+        }
+    }
+
+match:
+    if (lastFinal == 0) {
+        cout << "match failure!" << endl;
+        return -1;
+    }
+    string s(str, lastFinal + 1);
+    cout << "match s: '" << s << "'" << endl;
+    return 0;
 }
