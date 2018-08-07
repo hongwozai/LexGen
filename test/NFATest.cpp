@@ -45,3 +45,7 @@ TEST(nfa, read)
 //     EXPECT_EQ(256, nfa.parse(value5, next));
 //     EXPECT_EQ(256 - 26, nfa.parse(value6, next));
 // }
+
+TEST(nfa, add)
+{
+}

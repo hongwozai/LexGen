@@ -35,6 +35,24 @@ int NFA::init()
     return 0;
 }
 
+int NFA::add(int in, int out, string regexp, bool isfinal)
+{
+    if (bigStates.find(in) == bigStates.end()) {
+        bigStates[in] = new State(in);
+        seq++;
+    }
+    if (bigStates.find(out) == bigStates.end()) {
+        bigStates[out] = new State(out);
+        seq++;
+    }
+    if (isfinal) {
+        endStates.insert(out);
+    }
+
+    return read(regexp.data(), regexp.size(),
+                bigStates[in], bigStates[out]);
+}
+
 int NFA::read(const char *str, size_t len)
 {
     return read(str, len, bigStates[0], bigStates[2]);
