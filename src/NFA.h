@@ -32,7 +32,7 @@ public:
      * init
      * 初始化两个bigState
      */
-    int init();
+    int init(int seq = 2);
 
     /**
      * 添加正则与状态
@@ -46,8 +46,6 @@ public:
      * 打印dot语法的状态转换图
      */
     void debugPrint();
-
-    void reserve(int seq);
 
 private:
 

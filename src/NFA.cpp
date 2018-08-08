@@ -18,21 +18,18 @@
 
 using namespace std;
 
-int NFA::init()
+int NFA::init(int seq)
 {
     // initial bigState
     bigStates.insert(pair<int, State*>(0, new State(0)));
 
-    seq = 1;
-    numStates = 1;
-    return 0;
-}
+    this->seq = 1;
+    this->numStates = 1;
 
-void NFA::reserve(int seq)
-{
-    if (seq > 1) {
+    if (seq > this->seq) {
         this->seq = seq;
     }
+    return 0;
 }
 
 int NFA::add(int in, int out, string regexp, bool isfinal)

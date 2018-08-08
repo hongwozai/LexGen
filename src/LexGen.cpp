@@ -17,8 +17,7 @@ using namespace std;
 
 void LexGen::genTable()
 {
-    nfa.init();
-    nfa.reserve(10);
+    nfa.init(11);
     nfa.add(0, 2, "<.*>");
     nfa.add(0, 3, "\\w+");
     nfa.debugPrint();
