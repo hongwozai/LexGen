@@ -12,11 +12,43 @@
 #ifndef LEXGEN_H
 #define LEXGEN_H
 
+#include "NFA.h"
+#include "DFA.h"
+
 class LexGen
 {
 public:
 
+    LexGen() : dfa(nfa) {}
+
+    int init();
+
+    /**
+     * 搜索
+     */
+    int search(const char *str, int len);
+
+public:
+
+    /**
+     * 打印状态表
+     */
+    int printTable();
+
+    /**
+     * 打印搜索流程
+     */
+    int printSearch();
+
+    void genTable();
+
 private:
+
+private:
+
+    NFA nfa;
+
+    DFA dfa;
 };
 
 #endif /* LEXGEN_H */

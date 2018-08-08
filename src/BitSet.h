@@ -89,6 +89,12 @@ public:
         return -1;
     }
 
+private:
+
+    BitSet &operator=(BitSet &bitset) { return bitset; }
+
+    BitSet(BitSet &bitset) {}
+
 public:
 
     long num;

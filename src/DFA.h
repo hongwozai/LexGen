@@ -87,6 +87,10 @@ private:
 
     // 全局唯一序号
     int seq;
+
+private:
+
+    friend class LexGen;
 };
 
 #endif /* DFA_H */

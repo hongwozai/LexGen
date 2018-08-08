@@ -50,6 +50,7 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         state = stateStack.top();
         stateStack.pop();
 
+        assert(state != NULL);
         if (tempset.check(state->seq)) {
             continue;
         }
@@ -66,7 +67,7 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
         for (vector<NFA::Edge>::iterator it = state->vec.begin();
              it != state->vec.end();
              ++it) {
-            if (it->value.empty()) {
+            if (it->value.empty() && it->next != NULL) {
                 stateStack.push(it->next);
             }
         }

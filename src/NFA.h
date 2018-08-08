@@ -38,20 +38,16 @@ public:
      * 添加正则与状态
      * @param isfinal out节点是否为终结节点
      */
-    int add(int in, int out, std::string regexp, bool isfinal);
-
-    /**
-     * read
-     * @param str 输入的字符串
-     * @return
-     */
-    int read(const char *str, size_t len);
+    int add(int in, int out, std::string regexp,
+            bool isfinal = true);
 
     /**
      * debugPrint
      * 打印dot语法的状态转换图
      */
     void debugPrint();
+
+    void reserve(int seq);
 
 private:
 

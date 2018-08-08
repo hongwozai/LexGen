@@ -22,40 +22,35 @@ int NFA::init()
 {
     // initial bigState
     bigStates.insert(pair<int, State*>(0, new State(0)));
-    // error bigState
-    bigStates.insert(pair<int, State*>(1, new State(1)));
-    // end bigState
-    bigStates.insert(pair<int, State*>(2, new State(2)));
 
-    // 注册终结状态
-    endStates.insert(2);
-
-    seq = 3;
-    numStates = 3;
+    seq = 1;
+    numStates = 1;
     return 0;
+}
+
+void NFA::reserve(int seq)
+{
+    if (seq > 1) {
+        this->seq = seq;
+    }
 }
 
 int NFA::add(int in, int out, string regexp, bool isfinal)
 {
     if (bigStates.find(in) == bigStates.end()) {
         bigStates[in] = new State(in);
-        seq++;
+        numStates++;
     }
     if (bigStates.find(out) == bigStates.end()) {
         bigStates[out] = new State(out);
-        seq++;
+        numStates++;
     }
     if (isfinal) {
-        endStates.insert(out);
+        endStates.insert(-out);
     }
 
     return read(regexp.data(), regexp.size(),
                 bigStates[in], bigStates[out]);
-}
-
-int NFA::read(const char *str, size_t len)
-{
-    return read(str, len, bigStates[0], bigStates[2]);
 }
 
 /**

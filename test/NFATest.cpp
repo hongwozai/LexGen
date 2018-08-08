@@ -24,7 +24,7 @@ TEST(nfa, read)
     // EXPECT_EQ(0, nfa.read(regexp4.data(), regexp4.size()));
     // EXPECT_EQ(0, nfa.read(regexp5.data(), regexp5.size()));
     // EXPECT_EQ(0, nfa.read(regexp6.data(), regexp6.size()));
-    EXPECT_EQ(0, nfa.read(regexp7.data(), regexp7.size()));
+    // EXPECT_EQ(0, nfa.read(regexp7.data(), regexp7.size()));
     // EXPECT_EQ(0, nfa.read(regexp8.data(), regexp8.size()));
     // nfa.debugPrint();
 }
