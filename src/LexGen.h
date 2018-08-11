@@ -12,6 +12,7 @@
 #ifndef LEXGEN_H
 #define LEXGEN_H
 
+#include <string>
 #include "NFA.h"
 #include "DFA.h"
 
@@ -19,14 +20,34 @@ class LexGen
 {
 public:
 
-    LexGen() : dfa(nfa) {}
+    struct conf {
+        int start;
+        int end;
+        std::string regexp;
+        bool isfinish;
+    };
 
-    int init();
+    struct res {
+        // 单词的类型
+        int type;
+        // 单词的长度(单词的开始从字符串的开始)
+        int size;
+    };
+
+public:
+
+    LexGen()
+        : stateTable(0),
+          dfa(nfa, 1)
+    {}
+
+    int init(conf *confs, int conflen);
 
     /**
-     * 搜索
+     * 匹配
+     * 返回定义的nfa状态终结状态seq
      */
-    int search(const char *str, int len);
+    int match(const char *str, int len, res *r);
 
 public:
 
@@ -42,7 +63,13 @@ public:
 
     void genTable();
 
+    int findEndState(DFA::DState *dstate);
+
 private:
+
+    // 状态表
+    // 256个next位，1个终结状态需要返回的状态
+    int (*stateTable)[257];
 
 private:
 

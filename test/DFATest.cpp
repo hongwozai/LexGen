@@ -11,11 +11,12 @@ TEST(dfa, closure)
     // string regexp1 = "(a?b*c|ad*c|aac)*";
     string regexp1 = "\\d+";
     // string regexp1 = "abc?de";
+    nfa.init(2);
     nfa.add(0, 1, regexp1.data(), regexp1.size());
     // nfa.debugPrint();
     // EXPECT_EQ(12, nfa.numStates);
 
-    DFA dfa(nfa);
+    DFA dfa(nfa, 1);
     BitSet set(nfa.numStates);
     // EXPECT_EQ(nfa.numStates, set.num);
     // EXPECT_EQ(2, set.bytes);
@@ -29,7 +30,7 @@ TEST(dfa, closure)
     //     }
     // }
 
-    dfa.build();
+    // dfa.build();
 
     // string match = "01239abc";
     // dfa.search(match.data(), match.size());

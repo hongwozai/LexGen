@@ -51,7 +51,7 @@ int NFA::add(int in, int out, string regexp, bool isfinal)
     }
 
     ret = read(regexp.data(), regexp.size(),
-                bigStates[in], bigStates[out]);
+               bigStates[in], bigStates[out]);
     return ret;
 }
 

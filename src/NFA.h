@@ -22,9 +22,7 @@ class NFA
 {
 public:
 
-    NFA() : seq(0) {
-        init();
-    }
+    NFA() : seq(0) {}
 
     ~NFA() {}
 

@@ -22,11 +22,11 @@ class DFA
 {
 public:
 
-    DFA(NFA &nfa)
+    DFA(NFA &nfa, int startseq)
         : numStates(0),
           start(0),
           nfa(nfa),
-          seq(0)
+          seq(startseq)
     {}
 
     ~DFA() {}
@@ -45,6 +45,7 @@ public:
      * c传递-1就是不读字符,0-255是读取一个字符
      */
     int closure(NFA::State *state, BitSet &set, int c);
+    int closure(int nfaSeq, BitSet &bitset, int c);
 
     void print();
 
@@ -52,6 +53,10 @@ public:
 
 private:
 
+    /**
+     * dstate
+     * TODO: dstate需要记录自己包含的nfaStates中的终结状态
+     */
     struct DState {
         BitSet  nfaStates;
         DState *next[256];

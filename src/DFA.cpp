@@ -20,20 +20,16 @@
 
 using namespace std;
 
-int DFA::init()
-{
-    return 0;
-}
-
 /**
  * 算法思路：简单的方式，找空边，找c边，找空边
  * 另一个想法：
  * 对每个节点记录之前是否走过c边（走过的又遇到没走时候，视为没有走过）
  * @return -1错误状态，0走了正常状态
  * NOTE: 该函数写的过于复杂(完成了多个功能)
- *       1. 求闭包，还告知闭包是否包含终结状态
+ *       1. 求闭包，还告知闭包是否包含终结状态(含有终结状态的具体数值)
  *       2. 找一个节点读c所能到达的状态，并找其是否是终结状态
  *       找闭包，找读c到达的状态，找到达的状态是否引申为终结状态（再找闭包）
+ * NOTE: 此处DFA查找下一个时，不会记录中间访问过的状态
  */
 int DFA::closure(NFA::State *start, BitSet &bitset, int c)
 {
@@ -59,6 +55,7 @@ int DFA::closure(NFA::State *start, BitSet &bitset, int c)
             // 读c走边的时候先找到走到的状态，再判断是否终结
             if (nfa.endStates.find(state->seq) !=
                 nfa.endStates.end()) {
+                bitset.set(state->seq);
                 ret = 2;
             }
         }
@@ -111,6 +108,12 @@ end:
         }
     }
     return ret;
+}
+
+int DFA::closure(int nfaSeq, BitSet &bitset, int c)
+{
+    NFA::State *state = nfa.bigStates[nfaSeq];
+    return closure(state, bitset, c);
 }
 
 int DFA::nextDState(DState &dstate, int c, BitSet &set)
