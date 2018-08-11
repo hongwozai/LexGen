@@ -13,10 +13,12 @@
 #include <cassert>
 #include <stack>
 #include <string>
+#include <cstdio>
+#include <fstream>
 #include "LexGen.h"
 using namespace std;
 
-int LexGen::init(conf *confs, int conflen)
+int LexGen::init(Conf *confs, int conflen)
 {
     int seq = 1;
     // 算序号
@@ -111,13 +113,13 @@ finished:
     return state;
 }
 
-int LexGen::match(const char *str, int len, res *r)
+int LexGen::match(const char *str, int len, Res *r)
 {
     int  curr = 0;
     int  lastType = 0;
     int  lastFinal = 0;
 
-    curr = dfa.start->seq;
+    curr = DFA_INIT_SEQ;
     for (int i = 0; i < len; i++) {
         char c = str[i];
 
@@ -146,11 +148,34 @@ int LexGen::match(const char *str, int len, res *r)
 
 int LexGen::printTable()
 {
+    fprintf(stdout, "static int stateTable[%d][257] = ",
+            dfa.numStates + 1);
+    cout << "{" << endl;
     for (int i = 0; i < dfa.numStates + 1; i++) {
+        cout << "    {";
         for (int j = 0; j < 257; j++) {
-            cout << stateTable[i][j] << ",";
+            cout << stateTable[i][j];
+            if (j != 256) {
+                cout << ",";
+            }
+        }
+        cout << "}";
+        if (i != dfa.numStates) {
+            cout << ",";
         }
         cout << endl;
+    }
+    cout << "}" << endl;
+    return 0;
+}
+
+int LexGen::printCode()
+{
+    string line;
+    ifstream r("example.cpp", ios::in);
+
+    while (getline(r, line)) {
+        cout << line << endl;
     }
     return 0;
 }

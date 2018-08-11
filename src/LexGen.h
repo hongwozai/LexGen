@@ -20,14 +20,18 @@ class LexGen
 {
 public:
 
-    struct conf {
+    enum {
+        DFA_INIT_SEQ = 1,
+    };
+
+    struct Conf {
         int start;
         int end;
         std::string regexp;
         bool isfinish;
     };
 
-    struct res {
+    struct Res {
         // 单词的类型
         int type;
         // 单词的长度(单词的开始从字符串的开始)
@@ -38,16 +42,16 @@ public:
 
     LexGen()
         : stateTable(0),
-          dfa(nfa, 1)
+          dfa(nfa, DFA_INIT_SEQ)
     {}
 
-    int init(conf *confs, int conflen);
+    int init(Conf *confs, int conflen);
 
     /**
      * 匹配
      * 返回定义的nfa状态终结状态seq
      */
-    int match(const char *str, int len, res *r);
+    int match(const char *str, int len, Res *r);
 
 public:
 
@@ -55,11 +59,9 @@ public:
      * 打印状态表
      */
     int printTable();
+    int printCode();
 
-    /**
-     * 打印搜索流程
-     */
-    int printSearch();
+private:
 
     void genTable();
 

@@ -18,10 +18,10 @@ enum {
 TEST(lexgen, a)
 {
     int ret;
-    LexGen::res res;
+    LexGen::Res res;
     LexGen lexgen;
 
-    LexGen::conf array[] = {
+    LexGen::Conf array[] = {
         {0, 1, "\\w+", true},
         {0, 2, "<[^>]+>", true}
     };
@@ -30,6 +30,8 @@ TEST(lexgen, a)
 
     string html = "word<html>";
     ret = lexgen.match(html.data(), html.size(), &res);
+    lexgen.printTable();
+    lexgen.printCode();
 
     if (ret == -1) {
         cout << "match failure" << endl;
