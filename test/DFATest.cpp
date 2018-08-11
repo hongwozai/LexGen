@@ -31,6 +31,6 @@ TEST(dfa, closure)
 
     dfa.build();
 
-    string match = "01239abc";
-    dfa.search(match.data(), match.size());
+    // string match = "01239abc";
+    // dfa.search(match.data(), match.size());
 }

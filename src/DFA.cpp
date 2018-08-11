@@ -121,7 +121,7 @@ int DFA::nextDState(DState &dstate, int c, BitSet &set)
     bool isfinal = false;
     map<int, NFA::State*>::iterator it;
 
-    for (int i = 0; i < nfa.numStates; i++) {
+    for (int i = 0; i < nfa.seq; i++) {
         if (!dstate.nfaStates.check(i)) {
             continue;
         }
@@ -150,7 +150,7 @@ int DFA::build()
 {
     int ret = 0;
     stack<DState*> dStack;
-    DState *dstate = new DState(nfa.numStates, seq++);
+    DState *dstate = new DState(nfa.seq, seq++);
     DState *newd = NULL;
     set<int> mark;
 
@@ -178,7 +178,7 @@ int DFA::build()
             bool isfinal = false;
 
             if (newd == NULL) {
-                newd = new DState(nfa.numStates, seq++);
+                newd = new DState(nfa.seq, seq++);
             } else {
                 newd->nfaStates.clear();
             }
@@ -211,6 +211,7 @@ int DFA::build()
             }
         }
     }
+    this->numStates = mark.size();
     return 0;
 }
 
@@ -244,6 +245,15 @@ void DFA::print()
 
         mark.insert(dstate->seq);
 
+        // 终结状态
+        if (dstate->isfinal) {
+            cerr << "    ";
+            cerr << "\"" << dstate->seq << ":";
+            printDState(dstate->nfaStates);
+            cerr << "\" [shape=doublecircle];"
+                 << endl;
+        }
+
         for (int i = 0; i < 256; i++) {
             if (dstate->next[i] == NULL) {
                 continue;
@@ -263,13 +273,19 @@ void DFA::print()
 
             /* label */
             cerr << " [label=\"";
-            cerr << (char)i;
+            if (isprint(i) &&
+                i != '#' && i != '"' && i != '\\') {
+                cerr << (char) i;
+            } else {
+                fprintf(stderr, "%x", i);
+            }
             cerr << "\"]";
             cerr << ";" << endl;
 
             dStack.push(dstate->next[i]);
         }
     }
+
     cerr << "}" << endl;
 }
 

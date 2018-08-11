@@ -34,6 +34,10 @@ int NFA::init(int seq)
 
 int NFA::add(int in, int out, string regexp, bool isfinal)
 {
+    int ret;
+    if (in < 0 || out < 0) {
+        return -1;
+    }
     if (bigStates.find(in) == bigStates.end()) {
         bigStates[in] = new State(in);
         numStates++;
@@ -43,11 +47,12 @@ int NFA::add(int in, int out, string regexp, bool isfinal)
         numStates++;
     }
     if (isfinal) {
-        endStates.insert(-out);
+        endStates.insert(out);
     }
 
-    return read(regexp.data(), regexp.size(),
+    ret = read(regexp.data(), regexp.size(),
                 bigStates[in], bigStates[out]);
+    return ret;
 }
 
 /**
@@ -324,6 +329,14 @@ void NFA::debugPrint(Frag *frag)
             cerr << "\"];" << endl;
 
         }
+    }
+
+    // 终结状态
+    for (set<int>::iterator it = endStates.begin();
+         it != endStates.end();
+         ++it) {
+        cerr << "    ";
+        cerr << *it << " [shape=\"doublecircle\"];" << endl;
     }
 
     cerr << "}" << endl;
