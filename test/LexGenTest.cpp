@@ -30,8 +30,8 @@ TEST(lexgen, a)
 
     string html = "word<html>";
     ret = lexgen.match(html.data(), html.size(), &res);
-    lexgen.printTable();
-    lexgen.printCode();
+    // lexgen.printTable();
+    // lexgen.printCode();
 
     if (ret == -1) {
         cout << "match failure" << endl;

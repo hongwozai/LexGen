@@ -165,7 +165,7 @@ int LexGen::printTable()
         }
         cout << endl;
     }
-    cout << "}" << endl;
+    cout << "};" << endl;
     return 0;
 }
 

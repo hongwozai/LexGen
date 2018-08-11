@@ -8,7 +8,7 @@ TESTTARGET = $(addsuffix Test, $(TARGET))
 
 CC = g++
 
-CFLAGS  = -g3 -Wall -Iinc -lstdc++ -std=gnu++98 -Isrc
+CFLAGS  = -g3 -Wall -Iinc -lstdc++ -Isrc
 LDFLAGS =
 
 SRCS  = $(wildcard $(addsuffix /*.cpp, $(SUBDIR)))
@@ -35,7 +35,7 @@ endif
 all: $(TARGET)
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) in.txt
 
 clean:
 	rm -rf $(TARGET)
@@ -47,7 +47,7 @@ test: LDFLAGS += -lgtest -lpthread
 test: $(TESTTARGET)
 	# @rm -rf test.png
 	# ./$(TESTTARGET) 2> test.dot && dot -Tpng test.dot -o test.png && display test.png
-	./$(TESTTARGET) 2> test.dot
+	./$(TESTTARGET) in.txt 2> test.dot
 
 coverage: CFLAGS  += --coverage
 coverage: LDFLAGS += --coverage
