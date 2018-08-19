@@ -1,3 +1,4 @@
+
 #include <cstdio>
 struct Res {
     // token type
@@ -30,7 +31,9 @@ int match(const char *str, int len, Res *r)
 
     // match failure
     if (lastFinal == -1) {
-        return -1;
+        if (len <= 0)
+            return -1;
+        return -2;
     }
     // match success
     if (r) {
@@ -48,7 +51,7 @@ int main(int argc, char *argv[])
 {
     int i = 0, ret = 0;
     Res res;
-    std::string str = "<ht>ml>word</html>fuck";
+    std::string str = "(#()'`,,@.#\\space#\\newline#\\a)";
 
     while (0 == (ret = match(str.data() + i, str.size() - i, &res))) {
         cout << "res.type: " << res.type << endl;
@@ -57,6 +60,10 @@ int main(int argc, char *argv[])
         i += res.size;
     }
     if (ret < 0) {
+        if (ret == -1) {
+            cout << "finished!\n" << endl;
+            return 0;
+        }
         cout << "pos: " << i + 1
              << ": match failure!" << endl;
     }
