@@ -26,8 +26,8 @@ int NFA::init(int seq)
     this->seq = 1;
     this->numStates = 1;
 
-    if (seq > this->seq) {
-        this->seq = seq;
+    if (seq >= this->seq) {
+        this->seq = seq + 1;
     }
     return 0;
 }
@@ -127,6 +127,17 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             fragStack.top().numStates++;
 
             bigStates[fragStack.top().end->seq] = fragStack.top().end;
+            // NOTE: 需要处理tempFrag.last之前指向终点的空边
+            for (vector<Edge>::reverse_iterator it
+                     = tempFrag.last->vec.rbegin();
+                 it != tempFrag.last->vec.rend();
+                 ++it) {
+                if (it->value.empty() && it->next == tempFrag.end) {
+                    tempFrag.last->vec.erase(it.base());
+                    break;
+                }
+            }
+
             // NOTE: 注意这里最后一条边在capture之前
             break;
         }
@@ -358,7 +369,15 @@ void NFA::debugPrint(Frag *frag)
             if (it->value.empty()) {
                 cerr << "<empty>";
             } else {
-                cerr << it->value;
+                for (size_t i = 0; i < it->value.size(); i++) {
+                    char c = it->value[i];
+                    if (isprint(c) &&
+                        c != '#' && c != '"' && c != '\\') {
+                        cerr << (char) c;
+                    } else {
+                        fprintf(stderr, "%x", c);
+                    }
+                }
             }
             cerr << "\"];" << endl;
 
@@ -418,6 +437,7 @@ void NFA::Frag::appendNode(const std::string &value)
         edge = last->addEdge(value, tempState);
     } else {
         // 选取最后这个空边且只向终结状态的节点
+        // 此处是因为+*?导致的
         bool flag = false;
         for (vector<Edge>::iterator it = last->vec.begin();
              it != last->vec.end();

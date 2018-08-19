@@ -1,5 +1,6 @@
 #include "LexGen.h"
 
+#include <cctype>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -46,6 +47,11 @@ int main(int argc, char *argv[])
     while (getline(file, line)) {
         LexGen::Conf   conf;
         vector<string> strConf;
+
+        // 放松语法
+        if (line.empty() || line[0] == '#' || isspace(line[0])) {
+            continue;
+        }
 
         splitString(line, strConf, '\t');
         if (strConf.size() != 4) {

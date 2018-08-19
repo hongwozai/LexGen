@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 {
     int i = 0, ret = 0;
     Res res;
-    std::string str = "(#()'`,,@.#\\space#\\newline#\\a)";
+    std::string str = "#b0101 #b23 100e11 100 +100 -100 45e11 45e+11 .21 .21e11 .21e+11 .21e-11 0.3434 2345234.123e11";
 
     while (0 == (ret = match(str.data() + i, str.size() - i, &res))) {
         cout << "res.type: " << res.type << endl;
