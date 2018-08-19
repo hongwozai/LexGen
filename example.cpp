@@ -1,3 +1,4 @@
+#include <cstdio>
 struct Res {
     // token type
     int type;
@@ -9,12 +10,13 @@ int match(const char *str, int len, Res *r)
 {
     int  curr = 0;
     int  lastType = 0;
-    int  lastFinal = 0;
+    int  lastFinal = -1;
 
     curr = 1;
     for (int i = 0; i < len; i++) {
         char c = str[i];
 
+        printf("curr: %d, c: %c, %x, %d\n", curr, c, c, c);
         curr = stateTable[curr][(unsigned)c];
         if (curr == 0) {
             // error or finish
@@ -27,7 +29,7 @@ int match(const char *str, int len, Res *r)
     }
 
     // match failure
-    if (lastFinal == 0) {
+    if (lastFinal == -1) {
         return -1;
     }
     // match success

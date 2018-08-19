@@ -81,6 +81,10 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 // TODO: 当作正常字符来操作
                 fragStack.top().appendNode(c);
                 break;
+            } else if (parseStack.top() == TRANSFER) {
+                fragStack.top().appendNode(c);
+                parseStack.pop();
+                break;
             }
             parseStack.push(BRACKET);
             newValue = '[';
@@ -93,6 +97,10 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             if (parseStack.top() != BRACKET) {
                 // 语法错误
                 return -1;
+            } else if (parseStack.top() == TRANSFER) {
+                fragStack.top().appendNode(c);
+                parseStack.pop();
+                break;
             }
             parseStack.pop();
 
@@ -111,6 +119,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 break;
             } else if (parseStack.top() == TRANSFER) {
                 fragStack.top().appendNode(c);
+                parseStack.pop();
                 break;
             }
             parseStack.push(PAIR);
@@ -125,16 +134,17 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
         case ')': {
             Frag &tempFrag = fragStack.top();
 
-            fragStack.pop();
             if (parseStack.top() == BRACKET) {
                 newValue += c;
                 break;
             } else if (parseStack.top() == TRANSFER) {
                 fragStack.top().appendNode(c);
+                parseStack.pop();
                 break;
             } else if (parseStack.top() != PAIR) {
                 return -3;
             }
+            fragStack.pop();
             parseStack.pop();
 
             tempFrag.end->addEdge("", fragStack.top().end);
@@ -156,6 +166,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 break;
             } else if (parseStack.top() == TRANSFER) {
                 fragStack.top().appendNode(c);
+                parseStack.pop();
                 break;
             } else if (tempFrag.last == tempFrag.start) {
                 return -4;
@@ -180,6 +191,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 break;
             } else if (parseStack.top() == TRANSFER) {
                 fragStack.top().appendNode(c);
+                parseStack.pop();
                 break;
             } else if (tempFrag.last == tempFrag.start) {
                 return -5;
@@ -201,6 +213,7 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
                 break;
             } else if (parseStack.top() == TRANSFER) {
                 fragStack.top().appendNode(c);
+                parseStack.pop();
                 break;
             } else if (tempFrag.last == tempFrag.start) {
                 return -6;
@@ -215,6 +228,14 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
         }
 
         case '|': {
+            if (parseStack.top() == TRANSFER) {
+                fragStack.top().appendNode(c);
+                parseStack.pop();
+                break;
+            } else if (parseStack.top() == BRACKET) {
+                newValue += c;
+                break;
+            }
             Frag &tempFrag = fragStack.top();
 
             tempFrag.edge = NULL;
@@ -223,6 +244,14 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
         }
 
         case '\\': {
+            if (parseStack.top() == TRANSFER) {
+                fragStack.top().appendNode(c);
+                parseStack.pop();
+                break;
+            } else if (parseStack.top() == BRACKET) {
+                newValue += c;
+                break;
+            }
             parseStack.push(TRANSFER);
             break;
         }
@@ -248,6 +277,10 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
             case PAIR:
                 // continue
             case NORMAL: {
+                if (c == '.') {
+                    fragStack.top().appendNode("[^\n]");
+                    break;
+                }
                 fragStack.top().appendNode(c);
                 break;
             }
@@ -265,7 +298,8 @@ int NFA::read(const char *str, size_t len, State *start, State *end)
 
     // 栈不为空,语法有错误
     if (!parseStack.empty() || fragStack.size() != 1) {
-        assert(!"stack not empty!");
+        // assert(!"stack not empty!");
+        cout << "regexp error: (" << str << ")" << endl;
         return -2;
     }
     return 0;
@@ -421,16 +455,8 @@ int NFA::Edge::parse()
         return 0;
     }
     if (value.size() == 1) {
-        if (value[0] == '.') {
-            for (int i = 0; i < 256; i++) {
-                if (i != '\n')
-                    val[i] = true;
-            }
-            return 255;
-        } else {
-            val[(int)value[0]] = true;
-            return 1;
-        }
+        val[(int)value[0]] = true;
+        return 1;
     }
     if (value[0] != '[' || value[value.size() - 1] != ']') {
         return -1;
@@ -484,6 +510,6 @@ string NFA::transfer(char c, int env)
     case 'W':
         return string("[^_0-9A-Za-z]");
     default:
-        return string(c, 1);
+        return string(1, c);
     }
 }

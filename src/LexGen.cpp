@@ -20,6 +20,7 @@ using namespace std;
 
 int LexGen::init(Conf *confs, int conflen)
 {
+    int ret = 0;
     int seq = 1;
     // 算序号
     for (int i = 0; i < conflen; i++) {
@@ -28,8 +29,12 @@ int LexGen::init(Conf *confs, int conflen)
 
     nfa.init(seq);
     for (int i = 0; i < conflen; i++) {
-        nfa.add(confs[i].start, confs[i].end, confs[i].regexp,
-                confs[i].isfinish);
+        ret = nfa.add(confs[i].start, confs[i].end,
+                      confs[i].regexp,
+                      confs[i].isfinish);
+        if (ret < 0) {
+            return -1;
+        }
     }
     dfa.build();
     genTable();

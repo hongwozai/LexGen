@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
             cerr << "format error("
                  << strConf.size()
                  << ")!" << endl;
-            break;
+            return -2;
         }
 
         conf.start = fromStr<int>(strConf[0]);
@@ -78,7 +78,10 @@ int main(int argc, char *argv[])
     {
         LexGen lex;
 
-        lex.init(confs.data(), confs.size());
+        if (lex.init(confs.data(), confs.size()) < 0) {
+            cout << "stop parse!" << endl;
+            return -1;
+        }
         lex.printTable();
         cout << endl;
         lex.printCode();
