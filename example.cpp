@@ -7,6 +7,11 @@ struct Res {
     int size;
 };
 
+/**
+ * @return 0 出现错误状态或者完成（使用lastFinal来判断最终字符来判断是否有错误）
+ *        -1 传入的参数有误（现在仅是len长度出现错误）
+ *        -2 匹配失败(没有能够匹配的模式)
+ */
 int match(const char *str, int len, Res *r)
 {
     int  curr = 0;
